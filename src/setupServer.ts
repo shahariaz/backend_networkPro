@@ -8,10 +8,10 @@ import HTTP_STATUS from 'http-status-codes';
 import 'express-async-errors'
 import hpp from 'hpp';
 import cookieSession from 'cookie-session'
-import {config} from 'dotenv'
-config();
+import {config} from './config'
 
-const SERVER_PORT = process.env.PORT || 5000;
+
+const SERVER_PORT = config.SERVER_PORT;
 export class NewtworkServer{
  private app:Application;
   constructor(app:Application){
@@ -31,9 +31,9 @@ export class NewtworkServer{
     app.use(
         cookieSession({
             name: 'cookie-session',
-            keys:['test1','test2'],
+            keys:[config.SECRET_KEY_ONE!,config.SECRET_KEY_TWO!],
             maxAge:24*7*60*60*1000,
-            secure:false,
+            secure:config.NODE_ENV === 'production',
 
         })
     );
@@ -41,7 +41,7 @@ export class NewtworkServer{
     app.use(hpp());
     app.use(
         cors({
-            origin:'*',
+            origin:config.CLIENT_URL,
             credentials:true,
             optionsSuccessStatus:200,
             methods:['GET','POST','PUT','DELETE','PATCH','OPTIONS'],

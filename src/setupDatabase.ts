@@ -1,9 +1,8 @@
 import mongoose from 'mongoose';
-
+import {config} from './config'
 export default ()=>{
     const connect = ()=>{
-        mongoose.connect('mongodb://localhost:27017/networkPro'
-        ).then(()=>{
+        mongoose.connect(`${config.DB_URI}`).then(()=>{
             console.log('Successfully connected to database');
         }).catch((error)=>{
             console.log('Error connecting to database');
