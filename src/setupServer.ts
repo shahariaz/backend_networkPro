@@ -1,5 +1,5 @@
 import {Application,json,urlencoded,Response,Request,NextFunction} from 'express'
-import {Server} from 'http'
+import http,{Server} from 'http'
 import cors from 'cors'
 import helmet from 'helmet'
 import compression from 'compression'
@@ -8,6 +8,10 @@ import HTTP_STATUS from 'http-status-codes';
 import 'express-async-errors'
 import hpp from 'hpp';
 import cookieSession from 'cookie-session'
+import {config} from 'dotenv'
+config();
+
+const SERVER_PORT = process.env.PORT || 5000;
 export class NewtworkServer{
  private app:Application;
   constructor(app:Application){
@@ -51,8 +55,19 @@ export class NewtworkServer{
   }
   private routeMiddleware(app:Application):void{}
   private globalErrorMiddleware(app:Application):void{}
-  private startServer(app:Application):void{}
+  private async startServer(app:Application):Promise<void>{
+    try {
+        const httpServer:http.Server = new http.Server(app);
+        this.startHttpServer(httpServer);
+    } catch (error) {
+        
+    }
+  }
   private createSockeIO(httpServer:Server):void{}
-  private startHttpServer(httpServer:Server):void{}
+  private startHttpServer(httpServer:Server):void{
+    httpServer.listen(SERVER_PORT,()=>{
+        console.log(`Server is running on port ${SERVER_PORT}`)
+    })
+  }
 
 }
