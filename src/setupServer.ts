@@ -1,5 +1,5 @@
 import {Application,json,urlencoded,Response,Request,NextFunction} from 'express'
-import http,{Server} from 'http'
+import http from 'http'
 import cors from 'cors'
 import helmet from 'helmet'
 import compression from 'compression'
@@ -8,10 +8,15 @@ import HTTP_STATUS from 'http-status-codes';
 import 'express-async-errors'
 import hpp from 'hpp';
 import cookieSession from 'cookie-session'
+import { Server } from 'socket.io'
+import { createClient } from 'redis'
+import { createAdapter } from '@socket.io/redis-streams-adapter'
+
+//file
 import {config} from './config'
+import applicationRoute from './routes'
 
 
-const SERVER_PORT = config.SERVER_PORT;
 export class NewtworkServer{
  private app:Application;
   constructor(app:Application){
@@ -53,21 +58,45 @@ export class NewtworkServer{
     app.use(urlencoded({extended:true,limit:'50mb'}));
     app.use(compression());
   }
-  private routeMiddleware(app:Application):void{}
+  private routeMiddleware(app:Application):void{
+    applicationRoute(app);
+  }
   private globalErrorMiddleware(app:Application):void{}
   private async startServer(app:Application):Promise<void>{
     try {
         const httpServer:http.Server = new http.Server(app);
+        const socketIO:Server = await this.createSocketIO(httpServer);
+
         this.startHttpServer(httpServer);
+        this.socketIOConnections(socketIO);
+
     } catch (error) {
-        
+      console.error('Error starting server:', error);  
     }
   }
-  private createSockeIO(httpServer:Server):void{}
-  private startHttpServer(httpServer:Server):void{
-    httpServer.listen(SERVER_PORT,()=>{
-        console.log(`Server is running on port ${SERVER_PORT}`)
+  private async createSocketIO(httpServer: http.Server): Promise<Server> {
+    const io: Server = new Server(httpServer, {
+        cors: {
+            origin: config.CLIENT_URL,
+            methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
+        },
+    });
+
+    const pubClient = createClient({ url: config.REDIS_HOST });
+    const subClient = pubClient.duplicate();
+
+    await Promise.all([pubClient.connect(), subClient.connect()]);
+
+    io.adapter(createAdapter(pubClient as any, subClient as any));
+
+    return io;
+}
+  private startHttpServer(httpServer:http.Server):void{
+    console.log(`server has started with process ${process.pid}`);
+    httpServer.listen(config.SERVER_PORT,()=>{
+        console.log(`Server is running on port ${config.SERVER_PORT}`)
     })
   }
+  private socketIOConnections(io:Server):void {};
 
 }
