@@ -12,10 +12,10 @@ import { Server } from 'socket.io';
 import { createClient } from 'redis';
 import { createAdapter } from '@socket.io/redis-streams-adapter';
 import Logger from 'bunyan';
-//file
+//file 
 import { config } from './config';
-import applicationRoute from './routes';
-import { CustomError, IErrorResponse } from './shared/global/helpers/error-handler';
+import applicationRoute from '@root/routes';
+import { CustomError, IErrorResponse } from '@global/helpers/error-handler';
 
 const log: Logger = config.createLogger('server');
 export class NewtworkServer {
@@ -104,5 +104,7 @@ export class NewtworkServer {
       log.info(`Server is running on port ${config.SERVER_PORT}`);
     });
   }
-  private socketIOConnections(io: Server): void {}
+  private socketIOConnections(io: Server): void {
+    log.info('socketIOConnections');
+  }
 }
