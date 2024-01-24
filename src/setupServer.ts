@@ -11,13 +11,13 @@ import cookieSession from 'cookie-session'
 import { Server } from 'socket.io'
 import { createClient } from 'redis'
 import { createAdapter } from '@socket.io/redis-streams-adapter'
-
+import Logger from 'bunyan'
 //file
 import {config} from './config'
 import applicationRoute from './routes'
 import { CustomError, IErrorResponse } from './shared/global/helpers/error-handler'
 
-
+const log:Logger = config.createLogger('server');
 export class NewtworkServer{
  private app:Application;
   constructor(app:Application){
@@ -67,10 +67,11 @@ export class NewtworkServer{
       res.status(HTTP_STATUS.NOT_FOUND).json({message:`${req.originalUrl} is not found`});
     })
     app.use((error:IErrorResponse,req:Request,res:Response,next:NextFunction)=>{
-      console.log(error);
+      log.error(error);
       if(error instanceof CustomError){
         res.status(error.statusCode).json(error.serializeErrors());
       }
+      next();
     })
   }
   private async startServer(app:Application):Promise<void>{
@@ -103,9 +104,9 @@ export class NewtworkServer{
     return io;
   }
   private startHttpServer(httpServer:http.Server):void{
-    console.log(`server has started with process ${process.pid}`);
+    log.info(`server has started with process ${process.pid}`);
     httpServer.listen(config.SERVER_PORT,()=>{
-        console.log(`Server is running on port ${config.SERVER_PORT}`)
+        log.info(`Server is running on port ${config.SERVER_PORT}`)
     })
   }
   private socketIOConnections(io:Server):void {};

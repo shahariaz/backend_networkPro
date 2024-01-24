@@ -1,5 +1,6 @@
 import dotenv from "dotenv";
 dotenv.config();
+import bunyan from "bunyan";
 class Config{
     public DB_URI: string |undefined;
     public SERVER_PORT: number ;
@@ -24,6 +25,9 @@ class Config{
         this.REDIS_HOST = process.env.REDIS_HOST || '';
 
         this.SERVER_PORT = Number(process.env.PORT) || this.DEFAULT_SERVER_PORT;
+    }
+    public createLogger(name: string):bunyan{
+        return bunyan.createLogger({name,level:'debug'});
     }
     public validateConfig():void{
       
