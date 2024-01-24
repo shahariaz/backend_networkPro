@@ -15,6 +15,7 @@ import { createAdapter } from '@socket.io/redis-streams-adapter'
 //file
 import {config} from './config'
 import applicationRoute from './routes'
+import { CustomError, IErrorResponse } from './shared/global/helpers/error-handler'
 
 
 export class NewtworkServer{
@@ -61,7 +62,17 @@ export class NewtworkServer{
   private routeMiddleware(app:Application):void{
     applicationRoute(app);
   }
-  private globalErrorMiddleware(app:Application):void{}
+  private globalErrorMiddleware(app:Application):void{
+    app.all('*',(req:Request,res:Response,next:NextFunction)=>{
+      res.status(HTTP_STATUS.NOT_FOUND).json({message:`${req.originalUrl} is not found`});
+    })
+    app.use((error:IErrorResponse,req:Request,res:Response,next:NextFunction)=>{
+      console.log(error);
+      if(error instanceof CustomError){
+        res.status(error.statusCode).json(error.serializeErrors());
+      }
+    })
+  }
   private async startServer(app:Application):Promise<void>{
     try {
         const httpServer:http.Server = new http.Server(app);
@@ -90,7 +101,7 @@ export class NewtworkServer{
     io.adapter(createAdapter(pubClient as any, subClient as any));
 
     return io;
-}
+  }
   private startHttpServer(httpServer:http.Server):void{
     console.log(`server has started with process ${process.pid}`);
     httpServer.listen(config.SERVER_PORT,()=>{
