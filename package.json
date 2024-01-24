@@ -4,7 +4,11 @@
   "description": "",
   "main": "app.js",
   "scripts": {
-    "dev": "nodemon -r tsconfig-paths/register src/app.ts | ./node_modules/.bin/bunyan.cmd"
+    "dev": "nodemon -r tsconfig-paths/register src/app.ts | npx bunyan",
+    "lint:check": "eslint \"src/**/*.ts\"",
+    "lint:fix": "eslint \"src/**/*.ts\" --fix",
+    "prettier:check": "prettier --check \"src/**/*.{ts,json}\"",
+  "prettier:fix": "prettier --write \"src/**/*.{ts,json}\""
   },
   "keywords": [],
   "author": "",
